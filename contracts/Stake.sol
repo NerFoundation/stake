@@ -209,6 +209,11 @@ contract Stake{
         delete contributions[contributions.length-1];
         contributions.length--;
     }
+
+
+    function public payable(){
+
+    }
     
 
     
