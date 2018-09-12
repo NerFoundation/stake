@@ -79,6 +79,7 @@ contract Stake{
         address user;
         uint amount;
         bool exists;
+        uint time;
     }
 
     mapping(address => User) public users;
@@ -132,6 +133,7 @@ contract Stake{
             usersList.push(msg.sender);
             user.user = msg.sender;
             user.exists = true;
+            user.time = now;
         }
 
         user.amount = user.amount + _value;
@@ -151,18 +153,38 @@ contract Stake{
             User memory currentUser = users[usersList[i]];
             
             uint amount = currentUser.amount;
-            uint bonus = amount.mul(bonusRate).div(100);
+            if(amount >= 10000 * (10 ** 18)){
+                uint bonus = amount.mul(bonusRate).div(100);
 
-            require(token.balanceOf(address(this)) >= bonus);
-            require(token.transfer(currentUser.user, bonus));
+                require(token.balanceOf(address(this)) >= bonus);
+                require(token.transfer(currentUser.user, bonus));
+            }
             i++;
         }
 
         indexOfPayee = i;
     }
 
+    event MultiSendComplete(bool status);
     function multiSendTokenComplete() public onlyOwner {
         indexOfPayee = 0;
+        MultiSendComplete(true);
+    }
+
+    event Withdrawn(address withdrawnTo, uint amount);
+    function withdrawTokens(uint _value) public {
+        require(_value > 0);
+
+        User storage user = users[msg.sender];
+        require(_value <= user.amount);
+        require(user.time > 4 weeks);
+
+        require(token.balanceOf(address(this)) >= _value);
+        token.transfer(msg.sender, _value);
+
+        emit Withdrawn(msg.sender, _value);
+
+
     }
 
     
