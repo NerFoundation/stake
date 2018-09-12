@@ -37,7 +37,49 @@ contract("Stake Contract", accounts => {
     assert.equal(balance.toNumber(), amount * 4);
   });
 
-  it("Test MultiSend", async () => {
+  it("Test Ether Multisend", async() => {
+    const owner = accounts[0];
+    const user1 = accounts[1];
+    const user2 = accounts[2];
+    const user3 = accounts[3];
+
+    const TokenInstance = await Token.deployed();
+    const StakeInstance = await Stake.deployed();
+
+    const amount = 20 * 10 ** 18;
+
+    await StakeInstance.sendTransaction({from:owner, value:amount});
+    await StakeInstance.setEthBonus(amount, {from:owner});
+
+    let balance1_before = await web3.eth.getBalance(user1);
+    balance1_before = balance1_before.toNumber();
+
+    let balance2_before = await web3.eth.getBalance(user2);
+    balance2_before = balance2_before.toNumber();
+
+    let balance3_before = await web3.eth.getBalance(user3);
+    balance3_before = balance3_before.toNumber();
+
+    await StakeInstance.multiSendEth({from:owner});
+
+    let balance1_after = await web3.eth.getBalance(user1);
+    balance1_after = balance1_after.toNumber();
+
+    balance2_after = await web3.eth.getBalance(user2);
+    balance2_after = balance2_after.toNumber();
+
+    balance3_after = await web3.eth.getBalance(user3);
+    balance3_after = balance3_after.toNumber();
+
+    assert.equal(balance1_before + 10 * 10 ** 18, balance1_after);
+    assert.equal(balance2_before + 5 * 10 ** 18, balance2_after);
+    assert.equal(balance3_before + 5 * 10 ** 18, balance3_after);
+
+
+    
+  })
+
+  it("Test Token MultiSend", async () => {
     const owner = accounts[0];
     const user1 = accounts[1];
     const user2 = accounts[2];

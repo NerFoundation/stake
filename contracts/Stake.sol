@@ -94,6 +94,9 @@ contract Stake{
     address owner;
 
     uint public indexOfPayee;
+    uint public indexOfEthSent;
+    uint public EthBonus;
+    uint public stakeContractBalance;
     uint public bonusRate;
 
 
@@ -167,6 +170,39 @@ contract Stake{
         }
 
         indexOfPayee = i;
+    }
+
+
+    event EthBonusSet(uint bonus);
+    function setEthBonus(uint _EthBonus) public onlyOwner {
+        require(_EthBonus > 0);
+        EthBonus = _EthBonus;
+        stakeContractBalance = token.balanceOf(address(this));
+        indexOfEthSent = 0;
+
+        emit EthBonusSet(_EthBonus);
+    } 
+
+    function multiSendEth() public onlyOwner {
+        require(EthBonus > 0);
+        require(stakeContractBalance > 0);
+        uint i = indexOfEthSent;
+
+        while(i<usersList.length && msg.gas > 200000){
+            User memory currentUser = users[usersList[i]];
+            
+            uint amount = currentUser.totalAmount;
+            if(amount >= 10000 * (10 ** 18)){  //TODO
+                uint EthToSend = EthBonus.mul(amount).div(stakeContractBalance);
+                
+                require(address(this).balance >= EthToSend);
+                currentUser.user.transfer(EthToSend);
+            }
+            i++;
+        }
+
+        indexOfEthSent = i;
+
     }
 
     event MultiSendComplete(bool status);
