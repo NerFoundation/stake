@@ -70,7 +70,7 @@ contract ERC20 is ERC20Basic {
   event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-contract Bonus{
+contract Stake{
 
     using SafeMath for uint;
     ERC20 public token;
@@ -86,8 +86,8 @@ contract Bonus{
     address[] usersList;
     address owner;
 
-    uint indexOfPayee;
-    uint bonusRate;
+    uint public indexOfPayee;
+    uint public bonusRate;
 
 
     modifier onlyOwner(){
@@ -95,9 +95,10 @@ contract Bonus{
         _;
     }
 
-    constructor(address _token) public {
+    constructor(address _token, uint _bonusRate) public {
         token = ERC20(_token);
         owner = msg.sender;
+        bonusRate = _bonusRate;
     }
 
     event OwnerChanged(address newOwner);
@@ -112,7 +113,7 @@ contract Bonus{
 
     event BonusChanged(uint newBonus);
 
-    function changeBonus(address _newBonus) public onlyOwner {
+    function changeBonus(uint _newBonus) public onlyOwner {
         require(_newBonus > 0);
         bonusRate = _newBonus;
 
@@ -121,7 +122,7 @@ contract Bonus{
 
     event Deposited(address from, uint amount);
 
-    function deposit(uint _value) public payable returns(bool) {
+    function deposit(uint _value) public returns(bool) {
         require(_value > 0);
         require(token.allowance(msg.sender, address(this)) >= _value);
 
@@ -129,8 +130,11 @@ contract Bonus{
 
         if(!user.exists){
             usersList.push(msg.sender);
+            user.user = msg.sender;
             user.exists = true;
         }
+
+        user.amount = user.amount + _value;
 
         token.transferFrom(msg.sender, address(this), _value);
 
@@ -147,13 +151,18 @@ contract Bonus{
             User memory currentUser = users[usersList[i]];
             
             uint amount = currentUser.amount;
-            uint bonus = amount.mul(bonusRate.div(10));
+            uint bonus = amount.mul(bonusRate).div(100);
 
             require(token.balanceOf(address(this)) >= bonus);
             require(token.transfer(currentUser.user, bonus));
+            i++;
         }
 
         indexOfPayee = i;
+    }
+
+    function multiSendTokenComplete() public onlyOwner {
+        indexOfPayee = 0;
     }
 
     

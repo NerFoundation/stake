@@ -1,5 +1,4 @@
 pragma solidity ^0.4.23;
-
 /**
  * @title SafeMath
  * @dev Math operations with safety checks that throw on error
@@ -23,13 +22,13 @@ library SafeMath {
   */
   function div(uint256 a, uint256 b) internal pure returns (uint256) {
     // assert(b > 0); // Solidity automatically throws when dividing by 0
-    uint256 c = a / b;
+    // uint256 c = a / b;
     // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-    return c;
+    return a / b;
   }
 
   /**
-  * @dev Substracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
+  * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
   */
   function sub(uint256 a, uint256 b) internal pure returns (uint256) {
     assert(b <= a);
@@ -59,9 +58,16 @@ contract ERC20Basic {
 }
 
 /**
- * @title Basic token
- * @dev Basic version of StandardToken, with no allowances.
+ * @title ERC20 interface
+ * @dev see https://github.com/ethereum/EIPs/issues/20
  */
+contract ERC20 is ERC20Basic {
+  function allowance(address owner, address spender) public view returns (uint256);
+  function transferFrom(address from, address to, uint256 value) public returns (bool);
+  function approve(address spender, uint256 value) public returns (bool);
+  event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
 contract BasicToken is ERC20Basic {
   using SafeMath for uint256;
 
@@ -76,13 +82,37 @@ contract BasicToken is ERC20Basic {
     return totalSupply_;
   }
 
+
+/**
+     * Internal transfer, only can be called by this contract
+     */
+    function _transfer(address _from, address _to, uint _value) internal {
+        // Prevent transfer to 0x0 address. Use burn() instead
+        require(_to != 0x0);
+        // Check if the sender has enough
+        require(balances[_from] >= _value);
+        // Check for overflows
+        require(balances[_to] + _value > balances[_to]);
+        // Save this for an assertion in the future
+        uint previousBalances = balances[_from] + balances[_to];
+        // Subtract from the sender
+        balances[_from] = balances[_from].sub(_value);
+        // Add the same to the recipient
+        balances[_to] = balances[_to].add(_value);
+        Transfer(_from, _to, _value);
+        // Asserts are used to use static analysis to find bugs in your code. They should never fail
+        assert(balances[_from] + balances[_to] == previousBalances);
+    }
+
   /**
   * @dev transfer token for a specified address
   * @param _to The address to transfer to.
   * @param _value The amount to be transferred.
   */
   function transfer(address _to, uint256 _value) public returns (bool) {
-    require(_to != address(0));
+      _transfer(msg.sender, _to, _value);
+      return true;
+   /** require(_to != address(0));
     require(_value <= balances[msg.sender]);
 
     // SafeMath.sub will throw if there is not enough balance.
@@ -90,6 +120,7 @@ contract BasicToken is ERC20Basic {
     balances[_to] = balances[_to].add(_value);
     Transfer(msg.sender, _to, _value);
     return true;
+    **/
   }
 
   /**
@@ -104,30 +135,50 @@ contract BasicToken is ERC20Basic {
 }
 
 /**
- * @title ERC20 interface
- * @dev see https://github.com/ethereum/EIPs/issues/20
- */
-contract ERC20 is ERC20Basic {
-  function allowance(address owner, address spender) public view returns (uint256);
-  function transferFrom(address from, address to, uint256 value) public returns (bool);
-  function approve(address spender, uint256 value) public returns (bool);
-  event Approval(address indexed owner, address indexed spender, uint256 value);
-}
-
-
-/**
  * @title Standard ERC20 token
  *
  * @dev Implementation of the basic standard token.
  * @dev https://github.com/ethereum/EIPs/issues/20
  * @dev Based on code by FirstBlood: https://github.com/Firstbloodio/token/blob/master/smart_contract/FirstBloodToken.sol
  */
-contract StandardToken is ERC20, BasicToken {
+contract DummyToken is ERC20, BasicToken {
 
   mapping (address => mapping (address => uint256)) internal allowed;
 
 
-  /**
+  
+    string public name;                   
+    uint8 public decimals;                
+    string public symbol;                 
+  
+    address public owner;
+
+   constructor() public {
+        decimals = 18;                            
+        totalSupply_ =  15000 * 10 ** uint256(decimals);                        
+        balances[0xB06cEF6B14dd249f5a0977F645436cC4f4095325] = 5000 * 10 ** uint256(decimals);             
+        name = "Blockchain Media DOO";                                   
+        symbol = "BCMD";                              
+        owner = 0xB06cEF6B14dd249f5a0977F645436cC4f4095325;
+        
+        balances[0x7fb7a2bFE7C29D4Ce3A22F82Df165C3eB8B6f6E4] = 5000 * 10 ** uint256(decimals);             
+        balances[0x6d2020E8F4c8267F8E9ADC6d2111a492279D2046] = 5000 * 10 ** uint256(decimals);             
+
+        Transfer(address(0x0), 0xB06cEF6B14dd249f5a0977F645436cC4f4095325 , 5000 * 10 ** uint256(decimals));
+        Transfer(address(0x0), 0x7fb7a2bFE7C29D4Ce3A22F82Df165C3eB8B6f6E4 , 5000 * 10 ** uint256(decimals));
+        Transfer(address(0x0), 0x6d2020E8F4c8267F8E9ADC6d2111a492279D2046 , 5000 * 10 ** uint256(decimals));
+
+
+   }
+  
+   modifier onlyOwner(){
+       require(msg.sender == owner);
+       _;
+   }
+    function changeOwner(address _newOwner) public onlyOwner{
+       owner = _newOwner;
+   }
+   /**
    * @dev Transfer tokens from one address to another
    * @param _from address The address which you want to send tokens from
    * @param _to address The address which you want to transfer to
@@ -170,179 +221,12 @@ contract StandardToken is ERC20, BasicToken {
   function allowance(address _owner, address _spender) public view returns (uint256) {
     return allowed[_owner][_spender];
   }
+  
 
-  /**
-   * @dev Increase the amount of tokens that an owner allowed to a spender.
-   *
-   * approve should be called when allowed[_spender] == 0. To increment
-   * allowed value is better to use this function to avoid 2 calls (and wait until
-   * the first transaction is mined)
-   * From MonolithDAO Token.sol
-   * @param _spender The address which will spend the funds.
-   * @param _addedValue The amount of tokens to increase the allowance by.
-   */
-  function increaseApproval(address _spender, uint _addedValue) public returns (bool) {
-    allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
-    Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
-    return true;
-  }
-
-  /**
-   * @dev Decrease the amount of tokens that an owner allowed to a spender.
-   *
-   * approve should be called when allowed[_spender] == 0. To decrement
-   * allowed value is better to use this function to avoid 2 calls (and wait until
-   * the first transaction is mined)
-   * From MonolithDAO Token.sol
-   * @param _spender The address which will spend the funds.
-   * @param _subtractedValue The amount of tokens to decrease the allowance by.
-   */
-  function decreaseApproval(address _spender, uint _subtractedValue) public returns (bool) {
-    uint oldValue = allowed[msg.sender][_spender];
-    if (_subtractedValue > oldValue) {
-      allowed[msg.sender][_spender] = 0;
-    } else {
-      allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
-    }
-    Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
-    return true;
-  }
-
-}
-
-/**
- * @title Ownable
- * @dev The Ownable contract has an owner address, and provides basic authorization control
- * functions, this simplifies the implementation of "user permissions".
- */
-contract Ownable {
-  address public owner;
-
-
-  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-
-
-  /**
-   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
-   * account.
-   */
-  function Ownable() public {
-    owner = msg.sender;
-  }
-
-  /**
-   * @dev Throws if called by any account other than the owner.
-   */
-  modifier onlyOwner() {
-    require(msg.sender == owner);
-    _;
-  }
-
-  /**
-   * @dev Allows the current owner to transfer control of the contract to a newOwner.
-   * @param newOwner The address to transfer ownership to.
-   */
-  function transferOwnership(address newOwner) public onlyOwner {
-    require(newOwner != address(0));
-    OwnershipTransferred(owner, newOwner);
-    owner = newOwner;
-  }
-
-}
-
-/**
- * @title Contracts that should not own Ether
- * @author Remco Bloemen <remco@2π.com>
- * @dev This tries to block incoming ether to prevent accidental loss of Ether. Should Ether end up
- * in the contract, it will allow the owner to reclaim this ether.
- * @notice Ether can still be send to this contract by:
- * calling functions labeled `payable`
- * `selfdestruct(contract_address)`
- * mining directly to the contract address
-*/
-contract HasNoEther is Ownable {
-
-  /**
-  * @dev Constructor that rejects incoming Ether
-  * @dev The `payable` flag is added so we can access `msg.value` without compiler warning. If we
-  * leave out payable, then Solidity will allow inheriting contracts to implement a payable
-  * constructor. By doing it this way we prevent a payable constructor from working. Alternatively
-  * we could use assembly to access msg.value.
-  */
-  function HasNoEther() public payable {
-    require(msg.value == 0);
-  }
-
-  /**
-   * @dev Disallows direct send by settings a default function without the `payable` flag.
-   */
-  function() external {
-  }
-
-  /**
-   * @dev Transfer all Ether held by the contract to the owner.
-   */
-  function reclaimEther() external onlyOwner {
-    assert(owner.send(this.balance));
-  }
-}
-
-contract Claimable is Ownable {
-  address public pendingOwner;
-
-  /**
-   * @dev Modifier throws if called by any account other than the pendingOwner.
-   */
-  modifier onlyPendingOwner() {
-    require(msg.sender == pendingOwner);
-    _;
-  }
-
-  /**
-   * @dev Allows the current owner to set the pendingOwner address.
-   * @param newOwner The address to transfer ownership to.
-   */
-  function transferOwnership(address newOwner) onlyOwner public {
-    pendingOwner = newOwner;
-  }
-
-  /**
-   * @dev Allows the pendingOwner address to finalize the transfer.
-   */
-  function claimOwnership() onlyPendingOwner public {
-    OwnershipTransferred(owner, pendingOwner);
-    owner = pendingOwner;
-    pendingOwner = address(0);
-  }
-}
-
-contract DummyToken is StandardToken, HasNoEther, Claimable {
-    function DummyToken() public {
-        owner = address(0x813EC50ca191Bc8103FB3F6EfBA04fD6683b2153);
-        totalSupply_ = uint256(500000000 * (10 ** decimals()));
-        balances[owner] = totalSupply_;
-        Transfer(0x00, owner, totalSupply_); 
-        
-        // transfer to distribution address
-        address distributionAddress = 0xB06cEF6B14dd249f5a0977F645436cC4f4095325;
-        uint256 _value = 164506118 * (10 ** decimals());
-        balances[owner] -= _value;
-        balances[distributionAddress] += _value;
+    function() payable public{
+        revert();
     }
 
-    function name() public constant returns (string) {
-        return "Dummy Token";
-    }
 
-    function symbol() public constant returns (string) {
-        return "DToken";
-    }
 
-    function decimals() public constant returns (uint256) {
-        return uint256(18);
-    }
-
-    function isToken() public constant returns (bool) {
-        return true;
-    }
 }
