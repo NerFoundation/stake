@@ -6,8 +6,7 @@ contract("Stake Contract", accounts => {
     const TokenInstance = await Token.deployed();
     const StakeInstance = await Stake.deployed();
 
-    // console.log(TokenInstance.address);
-    // console.log(StakeInstance.address);
+   assert.notEqual(TokenInstance.address,"");
   });
 
   it("Test deposit", async () => {
@@ -29,26 +28,28 @@ contract("Stake Contract", accounts => {
     await StakeInstance.deposit(amount, { from: user2 });
     await StakeInstance.deposit(amount, { from: user3 });
 
-    let balance1 = await TokenInstance.balanceOf(user1);
-    balance1 = balance1.toNumber();
-    let balance2 = await TokenInstance.balanceOf(user2);
-    balance2 = balance2.toNumber();
-    let balance3 = await TokenInstance.balanceOf(user3);
-    balance3 = balance3.toNumber();
+    let balance1_before = await TokenInstance.balanceOf(user1);
+    balance1_before = balance1_before.toNumber();
+    // let balance2 = await TokenInstance.balanceOf(user2);
+    // balance2 = balance2.toNumber();
+    // let balance3 = await TokenInstance.balanceOf(user3);
+    // balance3 = balance3.toNumber();
 
-    console.log(balance1, balance2, balance3);
+    console.log(balance1_before);
 
     const balance = await TokenInstance.balanceOf(StakeInstance.address);
     console.log(balance.toNumber());
     await StakeInstance.multiSendToken({ from: owner});
 
-    balance1 = await TokenInstance.balanceOf(user1);
-    balance1 = balance1.toNumber();
-    balance2 = await TokenInstance.balanceOf(user2);
-    balance2 = balance2.toNumber();
-    balance3 = await TokenInstance.balanceOf(user3);
-    balance3 = balance3.toNumber();
+    let balance1_after = await TokenInstance.balanceOf(user1);
+    balance1_after = balance1_after.toNumber();
+    // balance2 = await TokenInstance.balanceOf(user2);
+    // balance2 = balance2.toNumber();
+    // balance3 = await TokenInstance.balanceOf(user3);
+    // balance3 = balance3.toNumber();
 
-    console.log(balance1, balance2, balance3);
+    console.log(balance1_after);
+
+    assert.equal(balance1_before + 100 * (10 ** 18), balance1_after);
   });
 });
