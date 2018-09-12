@@ -140,7 +140,7 @@ contract Stake{
             user.user = msg.sender;
             user.exists = true;
         }
-
+        user.totalAmount = user.totalAmount.add(_value);
         user.contributions.push(Contribution(_value, now));
         token.transferFrom(msg.sender, address(this), _value);
 
@@ -192,7 +192,7 @@ contract Stake{
         require(token.balanceOf(address(this)) >= _value);
 
         user.amountAvailableToWithdraw = user.amountAvailableToWithdraw.sub(_value);
-        
+
         token.transfer(msg.sender, _value);
 
         emit Withdrawn(msg.sender, _value);
