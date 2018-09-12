@@ -75,11 +75,17 @@ contract Stake{
     using SafeMath for uint;
     ERC20 public token;
 
+    struct Contribution{
+        uint amount;
+        uint time;
+    }
+
     struct User{
         address user;
-        uint amount;
+        uint amountAvailableToWithdraw;
         bool exists;
-        uint time;
+        uint totalAmount;
+        Contribution[] contributions;       
     }
 
     mapping(address => User) public users;
@@ -133,11 +139,9 @@ contract Stake{
             usersList.push(msg.sender);
             user.user = msg.sender;
             user.exists = true;
-            user.time = now;
         }
 
-        user.amount = user.amount + _value;
-
+        user.contributions.push(Contribution(_value, now));
         token.transferFrom(msg.sender, address(this), _value);
 
         emit Deposited(msg.sender, _value);
@@ -152,7 +156,7 @@ contract Stake{
         while(i<usersList.length && msg.gas > 200000){
             User memory currentUser = users[usersList[i]];
             
-            uint amount = currentUser.amount;
+            uint amount = currentUser.totalAmount;
             if(amount >= 10000 * (10 ** 18)){
                 uint bonus = amount.mul(bonusRate).div(100);
 
@@ -168,7 +172,7 @@ contract Stake{
     event MultiSendComplete(bool status);
     function multiSendTokenComplete() public onlyOwner {
         indexOfPayee = 0;
-        MultiSendComplete(true);
+        emit MultiSendComplete(true);
     }
 
     event Withdrawn(address withdrawnTo, uint amount);
@@ -176,16 +180,36 @@ contract Stake{
         require(_value > 0);
 
         User storage user = users[msg.sender];
-        require(_value <= user.amount);
-        require(user.time > 4 weeks);
 
+        for(uint q = 0; q < user.contributions.length; q++){
+            if(now > user.contributions[q].time + 4 weeks){
+                user.amountAvailableToWithdraw = user.amountAvailableToWithdraw.add(user.contributions[q].amount);
+                remove(q,user.contributions);
+            }
+        }
+
+        require(_value <= user.amountAvailableToWithdraw);
         require(token.balanceOf(address(this)) >= _value);
+
+        user.amountAvailableToWithdraw = user.amountAvailableToWithdraw.sub(_value);
+        
         token.transfer(msg.sender, _value);
 
         emit Withdrawn(msg.sender, _value);
 
 
     }
+
+    function remove(uint index, Contribution[] storage contributions) internal {
+        if (index >= contributions.length) return;
+
+        for (uint i = index; i<contributions.length-1; i++){
+            contributions[i] = contributions[i+1];
+        }
+        delete contributions[contributions.length-1];
+        contributions.length--;
+    }
+    
 
     
 }
