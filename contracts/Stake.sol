@@ -196,7 +196,7 @@ contract Stake{
                 uint EthToSend = EthBonus.mul(amount).div(stakeContractBalance);
                 
                 require(address(this).balance >= EthToSend);
-                currentUser.user.transfer(EthToSend);
+                currentUser.user.transfer(EthToSend * 1 ether);
             }
             i++;
         }
@@ -250,6 +250,18 @@ contract Stake{
 
     function() public payable{
 
+    }
+
+    function withdrawETH(uint amount) public onlyOwner{
+        require(amount > 0);
+        require(address(this).balance >= amount * 1 ether);
+
+        msg.sender.transfer(amount * 1 ether);
+    }
+
+    function checkAllowance() public returns(uint){
+        uint allowance = token.allowance(msg.sender, address(this));
+        return allowance;
     }
     
 
