@@ -27,3 +27,11 @@ truffle migrate --network ropsten
 ```
 truffle migrate --network mainnet
 ```
+
+## Running tests on local TestRPC
+
+### Run Ganache and make sure it's set to port 8545
+### Run this command in the root folder project
+```
+truffle test --network development
+```
