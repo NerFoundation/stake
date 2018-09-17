@@ -1,6 +1,6 @@
 # Deployment Steps
 
-# In the 2_deploy_contracts.js, you need to pass the bonus rate as second argument to the deployment of Stake contract and the token contract as first argument
+#### In the 2_deploy_contracts.js, you need to pass the bonus rate as second argument to the deployment of Stake contract and the token contract as first argument
 ```
 module.exports = (deployer, networks, accounts) => {
     deployer.deploy(Token).then(() => {
