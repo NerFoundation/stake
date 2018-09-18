@@ -85,6 +85,8 @@ contract Stake{
         uint amountAvailableToWithdraw;
         bool exists;
         uint totalAmount;
+        uint totalBonusReceived;
+        uint withdrawCount;
         Contribution[] contributions;       
     }
 
@@ -157,13 +159,14 @@ contract Stake{
         uint i = indexOfPayee;
         
         while(i<usersList.length && msg.gas > 200000){
-            User memory currentUser = users[usersList[i]];
+            User storage currentUser = users[usersList[i]];
             
             uint amount = currentUser.totalAmount;
             if(amount >= 10000 * (10 ** 18)){  //TODO
                 uint bonus = amount.mul(bonusRate).div(100);
 
                 require(token.balanceOf(address(this)) >= bonus);
+                currentUser.totalBonusReceived = currentUser.totalBonusReceived.add(bonus);
                 require(token.transfer(currentUser.user, bonus));
             }
             i++;
@@ -230,6 +233,8 @@ contract Stake{
         user.amountAvailableToWithdraw = user.amountAvailableToWithdraw.sub(_value);
         user.totalAmount = user.totalAmount.sub(_value);
 
+        user.withdrawCount = user.withdrawCount.add(1);
+
         token.transfer(msg.sender, _value);
 
         emit Withdrawn(msg.sender, _value);
@@ -259,11 +264,40 @@ contract Stake{
         msg.sender.transfer(amount * 1 ether);
     }
 
-    function checkAllowance() public returns(uint){
+    function checkAllowance() public view returns(uint){
         uint allowance = token.allowance(msg.sender, address(this));
         return allowance;
     }
+
+    function getBonusReceived() public view returns(uint){
+        User memory user = users[msg.sender];
+        return user.totalBonusReceived;
+    }
     
+    function getContributionsCount() public view returns(uint){
+        User memory user = users[msg.sender];
+        return user.contributions.length;
+    }
+
+    function getWithdrawCount() public view returns(uint){
+        User memory user = users[msg.sender];
+        return user.withdrawCount;
+    }
+
+    function getLockedTokens() public view returns(uint){
+        User memory user = users[msg.sender];
+
+        uint i;
+        uint lockedTokens = 0;
+        for(i = 0; i < user.contributions.length; i++){
+            if(now < user.contributions[i].time + 4 weeks){
+                lockedTokens = lockedTokens.add(user.contributions[i].amount);
+            }
+        }
+
+        return lockedTokens;
+
+    }
 
     
 }

@@ -37,6 +37,18 @@ contract("Stake Contract", accounts => {
     assert.equal(balance.toNumber(), amount * 4);
   });
 
+
+  it("Test lock of tokens", async () => {
+    const StakeInstance = await Stake.deployed();
+    const amount = 1000 * 10 ** 18;
+    const user1 = accounts[1];
+
+
+    const result = await StakeInstance.getLockedTokens({from:user1});
+    assert.equal(result.toNumber(), amount );
+
+  })
+
   it("Test Ether Multisend", async() => {
     const owner = accounts[0];
     const user1 = accounts[1];
