@@ -135,7 +135,7 @@ contract Stake{
     event Deposited(address from, uint amount);
 
     function deposit(uint _value) public returns(bool) {
-        require(_value > 0);
+        require(_value >= 10000 * (10 ** 18));
         require(token.allowance(msg.sender, address(this)) >= _value);
 
         User storage user = users[msg.sender];
