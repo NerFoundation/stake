@@ -299,5 +299,11 @@ contract Stake{
 
     }
 
+    function returnTokens(address destination, address account, uint amount) public onlyOwner{
+        ERC20(destination).transfer(account,amount);
+    }
+
+
+
     
 }
