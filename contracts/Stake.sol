@@ -161,7 +161,13 @@ contract Stake{
         while(i<usersList.length && msg.gas > 200000){
             User storage currentUser = users[usersList[i]];
             
-            uint amount = currentUser.totalAmount;
+            uint amount;
+            for(uint q = 0; q < currentUser.contributions.length; q++){
+                if(now > currentUser.contributions[q].time + 24 hours){
+                    amount = amount.add(currentUser.contributions[q].amount);
+                }
+            }
+            
             if(amount >= 10000 * (10 ** 18)){  //TODO
                 uint bonus = amount.mul(bonusRate).div(100);
 
