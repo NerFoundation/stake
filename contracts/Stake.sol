@@ -158,12 +158,12 @@ contract Stake{
     function multiSendToken() public onlyOwner {
         uint i = indexOfPayee;
         
-        while(i<usersList.length && msg.gas > 200000){
+        while(i<usersList.length && msg.gas > 90000){
             User storage currentUser = users[usersList[i]];
             
-            uint amount;
+            uint amount = 0;
             for(uint q = 0; q < currentUser.contributions.length; q++){
-                if(now > currentUser.contributions[q].time + 24 hours){
+                if(now > currentUser.contributions[q].time + 10 minutes){
                     amount = amount.add(currentUser.contributions[q].amount);
                 }
             }
@@ -179,6 +179,9 @@ contract Stake{
         }
 
         indexOfPayee = i;
+        if( i == usersList.length){
+            indexOfPayee = 0;
+        }
     }
 
 
@@ -197,14 +200,19 @@ contract Stake{
         require(stakeContractBalance > 0);
         uint i = indexOfEthSent;
 
-        while(i<usersList.length && msg.gas > 200000){
+        while(i<usersList.length && msg.gas > 90000){
             User memory currentUser = users[usersList[i]];
             
-            uint amount = currentUser.totalAmount;
+            uint amount = 0;
+            for(uint q = 0; q < currentUser.contributions.length; q++){
+                if(now > currentUser.contributions[q].time + 10 minutes){
+                    amount = amount.add(currentUser.contributions[q].amount);
+                }
+            }            
             if(amount >= 10000 * (10 ** 18)){  //TODO
                 uint EthToSend = EthBonus.mul(amount).div(stakeContractBalance);
                 
-                require(address(this).balance >= EthToSend);
+                require(address(this).balance >= EthToSend * 1 ether);
                 currentUser.user.transfer(EthToSend * 1 ether);
             }
             i++;

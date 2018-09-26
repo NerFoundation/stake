@@ -155,18 +155,18 @@ contract DummyToken is ERC20, BasicToken {
 
    constructor() public {
         decimals = 18;                            
-        totalSupply_ =  15000 * 10 ** uint256(decimals);                        
-        balances[0xB06cEF6B14dd249f5a0977F645436cC4f4095325] = 5000 * 10 ** uint256(decimals);             
+        totalSupply_ =  75000 * 10 ** uint256(decimals);                        
+        balances[0xB06cEF6B14dd249f5a0977F645436cC4f4095325] = 25000 * 10 ** uint256(decimals);             
         name = "Blockchain Media DOO";                                   
         symbol = "BCMD";                              
         owner = 0xB06cEF6B14dd249f5a0977F645436cC4f4095325;
         
-        balances[0x7fb7a2bFE7C29D4Ce3A22F82Df165C3eB8B6f6E4] = 5000 * 10 ** uint256(decimals);             
-        balances[0x6d2020E8F4c8267F8E9ADC6d2111a492279D2046] = 5000 * 10 ** uint256(decimals);             
+        balances[0x7fb7a2bFE7C29D4Ce3A22F82Df165C3eB8B6f6E4] = 25000 * 10 ** uint256(decimals);             
+        balances[0x6d2020E8F4c8267F8E9ADC6d2111a492279D2046] = 25000 * 10 ** uint256(decimals);             
 
-        Transfer(address(0x0), 0xB06cEF6B14dd249f5a0977F645436cC4f4095325 , 5000 * 10 ** uint256(decimals));
-        Transfer(address(0x0), 0x7fb7a2bFE7C29D4Ce3A22F82Df165C3eB8B6f6E4 , 5000 * 10 ** uint256(decimals));
-        Transfer(address(0x0), 0x6d2020E8F4c8267F8E9ADC6d2111a492279D2046 , 5000 * 10 ** uint256(decimals));
+        Transfer(address(0x0), 0xB06cEF6B14dd249f5a0977F645436cC4f4095325 , 25000 * 10 ** uint256(decimals));
+        Transfer(address(0x0), 0x7fb7a2bFE7C29D4Ce3A22F82Df165C3eB8B6f6E4 , 25000 * 10 ** uint256(decimals));
+        Transfer(address(0x0), 0x6d2020E8F4c8267F8E9ADC6d2111a492279D2046 , 25000 * 10 ** uint256(decimals));
 
 
    }
