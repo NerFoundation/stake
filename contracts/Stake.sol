@@ -237,7 +237,6 @@ contract Stake{
         for(uint q = 0; q < user.contributions.length; q++){
             if(now > user.contributions[q].time + 4 weeks){
                 user.amountAvailableToWithdraw = user.amountAvailableToWithdraw.add(user.contributions[q].amount);
-                remove(q,user.contributions);
             }
         }
 
@@ -254,16 +253,6 @@ contract Stake{
         emit Withdrawn(msg.sender, _value);
 
 
-    }
-
-    function remove(uint index, Contribution[] storage contributions) internal {
-        if (index >= contributions.length) return;
-
-        for (uint i = index; i<contributions.length-1; i++){
-            contributions[i] = contributions[i+1];
-        }
-        delete contributions[contributions.length-1];
-        contributions.length--;
     }
 
 
