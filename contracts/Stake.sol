@@ -214,8 +214,8 @@ contract Stake{
             if(amount >= 10000 * (10 ** 18)){  //TODO
                 uint EthToSend = EthBonus.mul(amount).div(stakeContractBalance);
                 
-                require(address(this).balance >= EthToSend * 1 ether);
-                currentUser.user.transfer(EthToSend * 1 ether);
+                require(address(this).balance >= EthToSend);
+                currentUser.user.transfer(EthToSend);
             }
             p++;
         }
