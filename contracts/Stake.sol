@@ -96,10 +96,12 @@ contract Stake{
     address owner;
 
     uint public indexOfPayee;
-    uint public indexOfEthSent;
     uint public EthBonus;
     uint public stakeContractBalance;
     uint public bonusRate;
+
+    uint public indexOfEthSent;
+
 
 
     modifier onlyOwner(){
@@ -163,7 +165,7 @@ contract Stake{
             
             uint amount = 0;
             for(uint q = 0; q < currentUser.contributions.length; q++){
-                if(now > currentUser.contributions[q].time + 10 minutes){
+                if(now > currentUser.contributions[q].time + 5 seconds){
                     amount = amount.add(currentUser.contributions[q].amount);
                 }
             }
@@ -198,14 +200,14 @@ contract Stake{
     function multiSendEth() public onlyOwner {
         require(EthBonus > 0);
         require(stakeContractBalance > 0);
-        uint i = indexOfEthSent;
+        uint p = indexOfEthSent;
 
-        while(i<usersList.length && msg.gas > 90000){
-            User memory currentUser = users[usersList[i]];
+        while(p<usersList.length && msg.gas > 90000){
+            User memory currentUser = users[usersList[p]];
             
             uint amount = 0;
             for(uint q = 0; q < currentUser.contributions.length; q++){
-                if(now > currentUser.contributions[q].time + 10 minutes){
+                if(now > currentUser.contributions[q].time + 5 seconds){
                     amount = amount.add(currentUser.contributions[q].amount);
                 }
             }            
@@ -215,10 +217,10 @@ contract Stake{
                 require(address(this).balance >= EthToSend * 1 ether);
                 currentUser.user.transfer(EthToSend * 1 ether);
             }
-            i++;
+            p++;
         }
 
-        indexOfEthSent = i;
+        indexOfEthSent = p;
 
     }
 
