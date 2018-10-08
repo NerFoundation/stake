@@ -94,6 +94,7 @@ contract Stake{
     
     address[] usersList;
     address owner;
+    uint public totalTokensDeposited;
 
     uint public indexOfPayee;
     uint public EthBonus;
@@ -148,6 +149,8 @@ contract Stake{
             user.exists = true;
         }
         user.totalAmount = user.totalAmount.add(_value);
+        totalTokensDeposited = totalTokensDeposited.add(_value);
+
         user.contributions.push(Contribution(_value, now));
         token.transferFrom(msg.sender, address(this), _value);
 
@@ -175,6 +178,8 @@ contract Stake{
 
                 require(token.balanceOf(address(this)) >= bonus);
                 currentUser.totalBonusReceived = currentUser.totalBonusReceived.add(bonus);
+                totalTokensDeposited = totalTokensDeposited.sub(bonus);
+
                 require(token.transfer(currentUser.user, bonus));
             }
             i++;
@@ -212,7 +217,7 @@ contract Stake{
                 }
             }            
             if(amount >= 10000 * (10 ** 18)){  //TODO
-                uint EthToSend = EthBonus.mul(amount).div(stakeContractBalance);
+                uint EthToSend = EthBonus.mul(amount).div(totalTokensDeposited);
                 
                 require(address(this).balance >= EthToSend);
                 currentUser.user.transfer(EthToSend);
@@ -249,6 +254,7 @@ contract Stake{
         user.totalAmount = user.totalAmount.sub(_value);
 
         user.withdrawCount = user.withdrawCount.add(1);
+        totalTokensDeposited = totalTokensDeposited.sub(_value);
 
         token.transfer(msg.sender, _value);
 
