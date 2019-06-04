@@ -4,7 +4,6 @@ pragma solidity ^0.4.23;
  * @dev Math operations with safety checks that throw on error
  */
 library SafeMath {
-
   /**
   * @dev Multiplies two numbers, throws on overflow.
   */
